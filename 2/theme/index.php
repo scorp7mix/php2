@@ -24,7 +24,7 @@
                     </a>
                 </p>
 
-                <p><?= $article['intro'] ?></p>
+                <p><?= $article['content'] ?></p>
             </li>
         <? endforeach; ?>
     <? endif; ?>
