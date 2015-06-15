@@ -6,7 +6,7 @@ class Article
     protected $title;
     protected $content;
 
-    public $preview;
+    protected $preview;
 	
 	function Article($id, $title, $content)
 	{
