@@ -1,3 +1,3 @@
-<h1><?= $title ?></h1>
+<h1><?= $article['title'] ?></h1>
 
-<p><?= $content ?></p>
+<p><?= $article['content'] ?></p>

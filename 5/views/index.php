@@ -1,9 +1,9 @@
 <h3>Перечень статей:</h3>
 <ul>
-    <? if ($type == 'edit'): ?>
+    <? if ($action == 'Edit'): ?>
         <li>
             <p>
-                <b><a href="new.php">Новая статья</a></b>
+                <b><a href="./index.php?c=Article&a=New">Новая статья</a></b>
             </p>
         </li>
     <? endif; ?>
@@ -13,7 +13,7 @@
         <? foreach ($articles as $article): ?>
             <li>
                 <p>
-                    <a href="<?= $type ?>.php?id=<?= $article['id_article'] ?>">
+                    <a href="./index.php?c=Article&a=<?= $action ?>&id=<?= $article['id_article'] ?>">
                         <?= $article['title'] ?>
                     </a>
                 </p>
