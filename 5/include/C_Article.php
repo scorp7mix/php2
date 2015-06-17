@@ -12,6 +12,9 @@ class C_Article extends C_Base
         startup();
     }
 
+    //
+    // Перечень всех статей
+    //
     public function Action_Index()
     {
         $this->title .= '::Index';
@@ -20,9 +23,12 @@ class C_Article extends C_Base
         $articles = articles_intro();
 
         $this->view = $this->Template('./views/index.php',
-            ['action' => 'Show', 'articles' => $articles]);
+            ['articles' => $articles]);
     }
 
+    //
+    // Перечень статей для редактирования
+    //
     public function Action_Editor()
     {
         $this->title .= '::Editor';
@@ -30,10 +36,13 @@ class C_Article extends C_Base
 
         $articles = articles_all();
 
-        $this->view = $this->Template('./views/index.php',
-            ['action' => 'Edit', 'articles' => $articles]);
+        $this->view = $this->Template('./views/editor.php',
+            ['articles' => $articles]);
     }
 
+    //
+    // Показ одной статьи
+    //
     public function Action_Show()
     {
         $this->title .= '::Show';
@@ -51,6 +60,9 @@ class C_Article extends C_Base
             ['article' => $article]);
     }
 
+    //
+    // Создание новой статьи
+    //
     public function Action_New()
     {
         $this->title .= '::New';
@@ -64,22 +76,20 @@ class C_Article extends C_Base
             }
             $article['title'] = $_POST['title'];
             $article['content'] = $_POST['content'];
-            $error = true;
-        }
-        else
-        {
-            $article['title'] = '';
-            $article['content'] = '';
-            $error = false;
+            $error['title'] = empty($_POST['title']) ? 'has-error' : '';
+            $error['content'] = empty($_POST['content']) ? 'has-error' : '';
         }
 
         $this->view = $this->Template('./views/form.php',
             ['form_title' => 'Новая статья',
-            'error' => $error,
-            'article' => $article,
+            'error' => isset($error) ? $error : ['title' => '', 'content' => ''],
+            'article' => isset($article) ? $article : ['title' => '', 'content' => ''],
             'button_value' => 'Добавить']);
     }
 
+    //
+    // Редактирование статьи
+    //
     public function Action_Edit()
     {
         $this->title .= "::Edit";
@@ -100,16 +110,16 @@ class C_Article extends C_Base
                 header('Location: index.php?c=Article&a=Editor');
                 die();
             }
-
             $article['title'] = $_POST['title'];
             $article['content'] = $_POST['content'];
-            $error = true;
+            $error['title'] = empty($_POST['title']) ? 'has-error' : '';
+            $error['content'] = empty($_POST['content']) ? 'has-error' : '';
         }
 
         $this->view = $this->Template('./views/form.php', [
             'form_title' => 'Редактирование статьи',
-            'error' => isset($error) ? $error : false,
-            'article' => $article,
+            'error' => isset($error) ? $error : ['title' => '', 'content' => ''],
+            'article' => isset($article) ? $article : ['title' => '', 'content' => ''],
             'button_value' => 'Изменить'
         ]);
     }

@@ -1,3 +1,9 @@
-<h1><?= $article['title'] ?></h1>
+<div class="jumbotron">
 
-<p><?= $article['content'] ?></p>
+    <h3 class="text-center"><?= $article['title'] ?></h3>
+
+    <hr>
+
+    <p><?= $article['content'] ?></p>
+
+</div>

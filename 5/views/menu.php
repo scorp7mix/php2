@@ -1,8 +1,5 @@
 <? foreach ($menu_items as $item): ?>
-    <? if (false == $item['readonly']): ?>
+    <li role="presentation" class=<?= $item['class'] ?>>
         <a href=<?= $item['src'] ?>><?= $item['title'] ?></a>
-    <? else: ?>
-        <b><?= $item['title'] ?></b>
-    <? endif; ?>
+    </li>
 <? endforeach; ?>
-<hr/>

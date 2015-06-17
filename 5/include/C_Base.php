@@ -11,6 +11,9 @@ abstract class C_Base extends C_Controller
 
     }
 
+    //
+    // Предварительная обработка перед обработчиком действия
+    //
     public function Before()
     {
         $this->title = 'Article';
@@ -18,6 +21,9 @@ abstract class C_Base extends C_Controller
         $this->view = '';
     }
 
+    //
+    // Компоновка страницы и ее вывод
+    //
     public function Render()
     {
         $menu = $this->Template('./views/menu.php',
@@ -28,7 +34,6 @@ abstract class C_Base extends C_Controller
             'menu' => $menu,
             'view' => $this->view]);
 
-        // Кодировка.
         header('Content-type: text/html; charset=utf-8');
 
         echo $page;

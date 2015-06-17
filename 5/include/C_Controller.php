@@ -5,6 +5,9 @@ abstract class C_Controller
     protected abstract function Render ();
     protected abstract function Before ();
 
+    //
+    // Обработка запроса
+    //
     public function Request ($action)
     {
         $this->Before();
@@ -12,31 +15,25 @@ abstract class C_Controller
         $this->Render();
     }
 
+    //
+    // Есть ли что-нибудь в _GET
+    //
     protected function IsGet()
     {
         return $_SERVER['REQUEST_METHOD'] == "GET";
     }
 
+    //
+    // Есть ли что-нибудь в _POST
+    //
     protected function IsPost()
     {
         return $_SERVER['REQUEST_METHOD'] == "POST";
     }
-/*
-    protected function check_params($func, $array, $params = [])
-    {
-        $check_result = false;
 
-        if(self::$func())
-        {
-            $check_result = true;
-            foreach($params as $p)
-            {
-                $check_result = $check_result && !empty($array[$p]);
-            }
-        }
-        return $check_result;
-    }
-*/
+    //
+    // Шаблонизатор
+    //
     protected function Template($fileName, $params = [])
     {
         foreach($params as $key => $value)
@@ -49,6 +46,9 @@ abstract class C_Controller
         return ob_get_clean();
     }
 
+    //
+    // Обработка несуществующего метода
+    //
     public function __call($name, $params)
     {
         die("Error");
