@@ -28,6 +28,5 @@ abstract class C_Base extends C_Controller
     //
     public function Render()
     {
-        header('Content-type: text/html; charset=utf-8');
     }
 }

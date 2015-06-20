@@ -37,6 +37,8 @@ class C_Article extends C_Base
                 'menu' => $menu,
                 'view' => $this->view]);
 
+        header('Content-type: text/html; charset=utf-8');
+
         echo $page;
     }
 
@@ -86,9 +88,32 @@ class C_Article extends C_Base
 
         $comments_data = $this->comments->All($id);
 
+        if ($this->IsPost()) {
+            if (!empty($_POST['user']) && !empty($_POST['text'])
+                && $this->comments->Create($id, $_POST['user'], $_POST['text']))
+            {
+                header('Location: index.php?c=Article&a=Show&id=' . $id);
+                die();
+            }
+            $new_comment['user'] = $_POST['user'];
+            $new_comment['text'] = $_POST['text'];
+            $error['user'] = empty($_POST['user']) ? 'has-error' : '';
+            $error['text'] = empty($_POST['text']) ? 'has-error' : '';
+        }
+
+        $comments_view = $this->Template('./views/comment/index.php',
+            ['comments' => $comments_data]);
+
+        $new_comment_view = $this->Template('./views/comment/form.php',
+            ['form_title' => 'Новый комментарий',
+                'error' => isset($error) ? $error : ['user' => '', 'text' => ''],
+                'new_comment' => isset($new_comment) ? $new_comment : ['user' => '', 'text' => ''],
+                'button_value' => 'Добавить']);
+
         $this->view = $this->Template('./views/article/show.php',
             ['article' => $article,
-            'comments' => $comments_data]);
+            'comments' => $comments_view,
+            'new_comment_form' => $new_comment_view]);
     }
 
     //

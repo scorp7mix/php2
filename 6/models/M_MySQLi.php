@@ -77,7 +77,7 @@ class M_MySQLi
             else
             {
                 $value = mysqli_real_escape_string(self::$link, $value);
-                $values = "'" . $value . "'";
+                $values[] = "'" . $value . "'";
             }
         }
 

@@ -20,7 +20,7 @@ class M_Article
     public static function GetInstance()
     {
         if(null === self::$instance)
-            self::$instance = new M_Article();
+            self::$instance = new self();
 
         return self::$instance;
     }
