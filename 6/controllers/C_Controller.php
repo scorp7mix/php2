@@ -51,6 +51,6 @@ abstract class C_Controller
     //
     public function __call($name, $params)
     {
-        die("Error");
+        die("There's no such method as " . $name);
     }
 }

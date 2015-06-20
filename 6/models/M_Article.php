@@ -11,7 +11,7 @@ class M_Article
     private function __construct()
     {
         // Подключаем базу через MySQLi
-        self::$db = M_MySQli::GetInstance();
+        self::$db = M_MySQLi::GetInstance();
     }
 
     //
@@ -19,7 +19,7 @@ class M_Article
     //
     public static function GetInstance()
     {
-        if(self::$instance == null)
+        if(null === self::$instance)
             self::$instance = new M_Article();
 
         return self::$instance;
@@ -48,9 +48,9 @@ class M_Article
     //
     // Конкретная статья
     //
-    public static function Show($id_article)
+    public static function Show($id)
     {
-        $query = sprintf("SELECT * FROM articles WHERE id_article = %d", $id_article);
+        $query = sprintf("SELECT * FROM articles WHERE id_article = %d", $id);
 
         return self::$db->Select($query)[0];
     }
@@ -92,12 +92,8 @@ class M_Article
     public static function get_menu($for_action)
     {
         $menu_items = [
-            'Index' =>
-                ['title' => 'Главная',
-                    'src' => './index.php'],
-            'Editor' =>
-                ['title' => 'Консоль редактора',
-                    'src' => './index.php?c=Article&a=Editor']
+            'Index' => 'Главная',
+            'Editor' => 'Консоль редактора'
         ];
 
         $menu_for_action = [];
@@ -105,9 +101,9 @@ class M_Article
         foreach($menu_items as $key => $item)
         {
             $menu_for_action[] =
-                ['title' => $item['title'],
-                    'src' => $item['src'],
-                    'class' => ($key == $for_action) ? 'active' : ''];
+                ['title' => $item,
+                'action' => $key,
+                'class' => ($key == $for_action) ? 'active' : ''];
         }
 
         return $menu_for_action;

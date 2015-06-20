@@ -2,6 +2,8 @@
 
 class C_Article extends C_Base
 {
+    private $model;
+    private $comments;
     //
     // Конструктор
     //
@@ -9,6 +11,33 @@ class C_Article extends C_Base
     {
         parent::__construct();
 
+        $this->model = M_Article::GetInstance();
+        $this->comments = M_Comment::GetInstance();
+    }
+
+    //
+    // Предварительная обработка перед обработчиком действия
+    //
+    public function Before()
+    {
+        $this->title = 'Article';
+    }
+
+    //
+    // Компоновка страницы и ее вывод
+    //
+    public function Render()
+    {
+        $menu = $this->Template('./views/menu.php',
+            ['menu_items' => $this->model->get_menu($this->action)]);
+
+
+        $page = $this->Template('./views/layout.php',
+            ['title' => $this->title,
+                'menu' => $menu,
+                'view' => $this->view]);
+
+        echo $page;
     }
 
     //
@@ -19,9 +48,9 @@ class C_Article extends C_Base
         $this->title .= '::Index';
         $this->action = 'Index';
 
-        $articles = M_Article::All();
+        $articles = $this->model->All();
 
-        $this->view = $this->Template('./views/index.php',
+        $this->view = $this->Template('./views/article/index.php',
             ['articles' => $articles]);
     }
 
@@ -33,9 +62,9 @@ class C_Article extends C_Base
         $this->title .= '::Editor';
         $this->action = 'Editor';
 
-        $articles = M_Article::All();
+        $articles = $this->model->All();
 
-        $this->view = $this->Template('./views/editor.php',
+        $this->view = $this->Template('./views/article/editor.php',
             ['articles' => $articles]);
     }
 
@@ -50,25 +79,28 @@ class C_Article extends C_Base
             header('Location: index.php');
 
         $id = intval($_GET['id']);
-        $article = $id ? M_Article::Show($id) : false;
+        $article = $id ? $this->model->Show($id) : false;
 
         if (!$article)
             header('Location: index.php');
 
-        $this->view = $this->Template('./views/show.php',
-            ['article' => $article]);
+        $comments_data = $this->comments->All($id);
+
+        $this->view = $this->Template('./views/article/show.php',
+            ['article' => $article,
+            'comments' => $comments_data]);
     }
 
     //
     // Создание новой статьи
     //
-    public function Action_New()
+    public function Create()
     {
-        $this->title .= '::New';
+        $this->title .= '::Create';
 
         if ($this->IsPost()) {
             if (!empty($_POST['title']) && !empty($_POST['content'])
-                && M_Article::Create($_POST['title'], $_POST['content']))
+                && $this->model->Create($_POST['title'], $_POST['content']))
             {
                 header('Location: index.php?c=Article&a=Editor');
                 die();
@@ -79,7 +111,7 @@ class C_Article extends C_Base
             $error['content'] = empty($_POST['content']) ? 'has-error' : '';
         }
 
-        $this->view = $this->Template('./views/form.php',
+        $this->view = $this->Template('./views/article/form.php',
             ['form_title' => 'Новая статья',
             'error' => isset($error) ? $error : ['title' => '', 'content' => ''],
             'article' => isset($article) ? $article : ['title' => '', 'content' => ''],
@@ -89,7 +121,7 @@ class C_Article extends C_Base
     //
     // Редактирование статьи
     //
-    public function Action_Edit()
+    public function Edit()
     {
         $this->title .= "::Edit";
 
@@ -97,14 +129,14 @@ class C_Article extends C_Base
             header('Location: index.php?c=Article&a=Editor');
 
         $id = intval($_GET['id']);
-        $article = $id ? M_Article::Show($id) : false;
+        $article = $id ? $this->model->Show($id) : false;
 
         if (!$article)
             header('Location: index.php?c=Article&a=Editor');
 
         if ($this->IsPost()) {
             if (!empty($_POST['title']) && !empty($_POST['content'])
-                && M_Article::Edit($id, $_POST['title'], $_POST['content'])
+                && $this->model->Edit($id, $_POST['title'], $_POST['content'])
             ) {
                 header('Location: index.php?c=Article&a=Editor');
                 die();
@@ -115,11 +147,10 @@ class C_Article extends C_Base
             $error['content'] = empty($_POST['content']) ? 'has-error' : '';
         }
 
-        $this->view = $this->Template('./views/form.php', [
-            'form_title' => 'Редактирование статьи',
+        $this->view = $this->Template('./views/article/form.php',
+            ['form_title' => 'Редактирование статьи',
             'error' => isset($error) ? $error : ['title' => '', 'content' => ''],
             'article' => isset($article) ? $article : ['title' => '', 'content' => ''],
-            'button_value' => 'Изменить'
-        ]);
+            'button_value' => 'Изменить']);
     }
 }
