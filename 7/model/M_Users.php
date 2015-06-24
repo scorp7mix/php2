@@ -186,7 +186,7 @@ class M_Users
 	//
 	public function IsOnline($id_user)
 	{		
-        $t = "SELECT * FROM sessions WHERE id_user = '%d'";
+        $t = "SELECT * FROM sessions WHERE id_user = %d";
         $query = sprintf($t, $id_user);
         $result = $this->msql->Select($query);
 
