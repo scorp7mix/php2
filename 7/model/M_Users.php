@@ -80,17 +80,45 @@ class M_Users
 		
 		return true;
 	}
-	
+
+    //
+    // Регистрация
+    // $login 		- логин
+    // $password 	- пароль
+    // результат	- true или текст ошибки
+    //
+
+    public function Register($login, $password)
+    {
+        // проверка есть ли пользователь в БД
+        $user = $this->GetByLogin($login);
+
+        if (null != $user)
+            return 'Такой пользователь уже зарегистрирован!!';
+
+        // проверка пароля
+        if(0 == strlen($password))
+            return 'Пароль не может быть пустым!!';
+
+        // создаем пользователя
+        $this->msql->Insert('users', ['login' => $login, 'password' => md5($password)]);
+
+        return true;
+    }
+
 	//
 	// Выход
 	//
 	public function Logout()
 	{
-		setcookie('login', '', time() - 1);
+        if(!$this->Get())
+            return false;
+        $this->msql->Delete('sessions', "sid='" . $this->sid . "'");
+        setcookie('login', '', time() - 1);
 		setcookie('password', '', time() - 1);
 		unset($_COOKIE['login']);
 		unset($_COOKIE['password']);
-		unset($_SESSION['sid']);		
+		unset($_SESSION['sid']);
 		$this->sid = null;
 		$this->uid = null;
 	}
@@ -134,9 +162,21 @@ class M_Users
 	// результат	- true или false
 	//
 	public function Can($priv, $id_user = null)
-	{		
-		// СДЕЛАТЬ САМОСТОЯТЕЛЬНО
-		return false;
+	{
+        if(null == $id_user)
+            $id_user = $this->Get()['id_user'];
+        if(null == $id_user)
+            return false;
+
+        $t = "SELECT * FROM users AS u " .
+             "LEFT JOIN privs2roles AS pr ON u.id_role = pr.id_role " .
+             "LEFT JOIN privs AS p ON pr.id_priv = p.id_priv " .
+             "WHERE u.id_user = %d AND p.name = '%s'";
+
+        $query = sprintf($t, $id_user, $priv);
+        $result = $this->msql->Select($query);
+
+		return $result ? true : false;
 	}
 
 	//
@@ -146,8 +186,11 @@ class M_Users
 	//
 	public function IsOnline($id_user)
 	{		
-		// СДЕЛАТЬ САМОСТОЯТЕЛЬНО
-		return false;
+        $t = "SELECT * FROM sessions WHERE id_user = '%d'";
+        $query = sprintf($t, $id_user);
+        $result = $this->msql->Select($query);
+
+        return $result ? true : false;
 	}
 	
 	//

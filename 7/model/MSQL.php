@@ -126,7 +126,7 @@ class MSQL
 	//		
 	public function Delete($table, $where)
 	{
-		$query = "DELETE FROM $table WHERE $where";		
+		$query = "DELETE FROM $table WHERE $where";
 		$result = mysql_query($query);
 						
 		if (!$result)
