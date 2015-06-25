@@ -1,1 +1,0 @@
-<?phpinclude_once('startup.php');include_once('model.php');startup();$articles = articles_intro();// Кодировка.header('Content-type: text/html; charset=utf-8');// Вывод в шаблон.include('theme/index.php');
