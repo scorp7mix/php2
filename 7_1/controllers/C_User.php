@@ -46,7 +46,7 @@ class C_User extends C_Base
 
             if(true === $reg_result)
             {
-                header('Location: index.php');
+                header('Location: /');
             }
 
             $user = ['login' => $_POST['login'],
@@ -75,7 +75,7 @@ class C_User extends C_Base
 
             if(true === $log_result)
             {
-                header('Location: index.php');
+                header('Location: /');
             }
 
             $user = ['login' => $_POST['login'],
@@ -104,7 +104,7 @@ class C_User extends C_Base
     public function Logout()
     {
         $this->model->Logout();
-        header('Location: index.php');
+        header('Location: /');
     }
 
     //

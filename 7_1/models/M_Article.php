@@ -58,7 +58,7 @@ class M_Article
     //
     // Создать статью
     //
-    public static function Create($object)
+    public static function Create($id = null, $object)
     {
         return self::$db->Insert('articles', $object);
     }

@@ -40,10 +40,10 @@ class C_Application extends C_Controller
         // Установка контроллера
         $c = '';
 
-        if(isset($params['c']))
+        if(isset($params[0]))
         {
-            $c = $params['c'];
-            unset($params['c']);
+            $c = $params[0];
+            unset($params[0]);
         }
 
         switch ($c)
@@ -63,10 +63,10 @@ class C_Application extends C_Controller
 
         // Установка обработчика действия
         $action = 'Index';
-        if(isset($params['a']))
+        if(isset($params[1]))
         {
-            $action = $params['a'];
-            unset($params['a']);
+            $action = $params[1];
+            unset($params[1]);
         }
 
         $params['user'] = $this->user;

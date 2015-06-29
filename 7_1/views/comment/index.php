@@ -7,7 +7,7 @@
         <p>Комментариев пока нет..</p>
     <? else: ?>
         <? foreach ($comments as $comment): ?>
-                    <a href="index.php?c=Comment&a=Edit&id=<?= $comment['id_comment'] ?>"
+                    <a href="/Comment/Edit/<?= $comment['id_comment'] ?>"
                        class="list-group-item">
                         <h4 class="list-group-item-heading"><?= $comment['login'] ?></h4>
                         <p class="list-group-item-text"><?= $comment['text'] ?></p>

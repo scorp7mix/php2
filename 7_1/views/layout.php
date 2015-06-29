@@ -11,11 +11,11 @@
         <div class="container text-right">
             <br>
             <? if(null == $user_login): ?>
-                <a href="index.php?c=User&a=Login" class="btn btn-info btn-sm">Вход</a>
-                <a href="index.php?c=User&a=Register" class="btn btn-info btn-sm">Регистрация</a>
+                <a href="/User/Login" class="btn btn-info btn-sm">Вход</a>
+                <a href="/User/Register" class="btn btn-info btn-sm">Регистрация</a>
             <? else: ?>
                 <span>Текущий пользователь: [ <?= $user_login ?> ]</span>
-                <a href="index.php?c=User&a=Logout" class="btn btn-info btn-sm">Выход</a>
+                <a href="/User/Logout" class="btn btn-info btn-sm">Выход</a>
             <? endif ?>
         </div>
     </header>
