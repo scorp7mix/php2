@@ -1,5 +1,9 @@
 <?php
 
+namespace blog\controllers;
+
+use blog\models\M_Comment;
+
 class C_Comment extends C_Base
 {
     private $id_article;

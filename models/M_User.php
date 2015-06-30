@@ -1,5 +1,7 @@
 <?php
 
+namespace blog\models;
+
 //
 // Менеджер пользователей
 //

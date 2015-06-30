@@ -1,5 +1,7 @@
 <?php
 
+namespace blog\models;
+
 class M_Article
 {
     private static $instance;

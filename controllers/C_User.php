@@ -1,5 +1,9 @@
 <?php
 
+namespace blog\controllers;
+
+use blog\models\M_User;
+
 class C_User extends C_Base
 {
     protected $model;

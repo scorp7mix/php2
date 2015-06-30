@@ -1,5 +1,7 @@
 <?php
 
+namespace blog\controllers;
+
 abstract class C_Controller
 {
     protected abstract function Render ();

@@ -1,15 +1,14 @@
 <?php
 
+namespace blog\controllers;
+
 class C_Application extends C_Controller
 {
     protected $content;
     protected $layout;
     protected $user;
 
-    public function __construct()
-    {
-
-    }
+    public function __construct() {}
 
     //
     // Предварительная обработка перед обработчиком действия
