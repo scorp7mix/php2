@@ -125,7 +125,7 @@ class Article extends Base
 
         $this->title .= "::Edit";
 
-        $article = $this->getArticle('Location: /Article/Editor');
+        $article = $this->getArticle('Location: /article/editor');
 
         if($this->isPost())
             $edit_result = $this->editElement('edit', $article['id_article']);
