@@ -27,7 +27,7 @@ abstract class C_Base extends C_Controller
     //
     protected function getElement ($params, $headerOnError)
     {
-        $id = isset($params['id']) ? intval($params['id']) : false;
+        $id = isset($params[2]) ? intval($params[2]) : false;
 
         if (!$id)
             header($headerOnError);

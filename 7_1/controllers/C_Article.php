@@ -80,7 +80,7 @@ class C_Article extends C_Base
     {
         $this->title .= '::Show';
 
-        $article = $this->getElement($params, 'Location: index.php');
+        $article = $this->getElement($params, 'Location: /');
 
         $this->comments = new C_Comment($article['id_article']);
 
@@ -127,7 +127,7 @@ class C_Article extends C_Base
 
         $this->title .= "::Edit";
 
-        $article = $this->getElement($params, 'Location: index.php?c=Article&a=Editor');
+        $article = $this->getElement($params, 'Location: /Article/Editor');
 
         if($this->IsPost())
             $edit_result = $this->editElement($article['id_article'], 'Edit');
@@ -164,7 +164,7 @@ class C_Article extends C_Base
         if ($fields_not_empty
             && $this->model->$action($id, $object))
         {
-            header('Location: index.php?c=Article&a=Editor');
+            header('Location: /Article/Editor');
             die();
         }
 

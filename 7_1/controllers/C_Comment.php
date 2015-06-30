@@ -57,7 +57,7 @@ class C_Comment extends C_Base
     {
         $this->title .= '::Show';
 
-        $comment = $this->getElement($params, 'Location: index.php?c=Article&a=Show&id=' . $this->id_article);
+        $comment = $this->getElement($params, 'Location: /Article/Show/' . $this->id_article);
 
         $this->view = $this->Template('./views/comment/show.php',
             ['comment' => $comment]);
@@ -97,7 +97,7 @@ class C_Comment extends C_Base
 
         $this->title .= "::Edit";
 
-        $comment = $this->getElement($params, 'Location: index.php?c=Article&a=Show&id=' . $this->id_article);
+        $comment = $this->getElement($params, 'Location: /Article/Show/' . $this->id_article);
 
         if($comment['id_user'] != $params['user']['id_user']) {
             $this->view = 'Вы не можете редактировать чужой комментарий!!';
@@ -130,7 +130,7 @@ class C_Comment extends C_Base
         if(!empty($text)
             && $this->model->$action($id, $object))
         {
-            header('Location: index.php?c=Article&a=Show&id=' . ($id_article ?  $id_article : $id));
+            header('Location: /Article/Show/' . ($id_article ?  $id_article : $id));
             die();
         }
 
