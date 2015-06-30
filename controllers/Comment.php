@@ -1,10 +1,10 @@
 <?php
 
-namespace blog\controllers;
+namespace controllers;
 
-use blog\models\M_Comment;
+use models\Comments;
 
-class C_Comment extends C_Base
+class Comment extends Base
 {
     private $id_article;
     private $users;
@@ -13,7 +13,7 @@ class C_Comment extends C_Base
     public function __construct($id_article)
     {
         $this->id_article = $id_article;
-        $this->model = M_Comment::getInstance();
+        $this->model = Comments::getInstance();
     }
 
     public function before()

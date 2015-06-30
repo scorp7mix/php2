@@ -1,16 +1,16 @@
 <?php
 
-namespace blog\controllers;
+namespace controllers;
 
-use blog\models\M_User;
+use models\Users;
 
-class C_User extends C_Base
+class User extends Base
 {
     protected $model;
 
     public function __construct()
     {
-        $this->model = M_User::getInstance();
+        $this->model = Users::getInstance();
     }
 
     public function before()

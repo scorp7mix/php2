@@ -1,8 +1,8 @@
 <?php
 
-namespace blog\controllers;
+namespace controllers;
 
-abstract class C_Controller
+abstract class Controller
 {
     protected $params;
 

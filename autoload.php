@@ -1,26 +1,12 @@
 <?php
 
-function __autoload($path)
+function __autoload($namespace)
 {
-    $name = array_pop(explode('\\', $path));
+    $path = __DIR__ . '\\' . trim($namespace, '\\') . '.php';
 
-    switch ($name[0]) {
-        case 'C':
-            $dir = '/controllers/';
-            break;
-        case 'M':
-            $dir = '/models/';
-            break;
-    }
-
-    if (isset($dir)) {
-        $include_path = __DIR__ . $dir . $name . '.php';
-        if (file_exists($include_path)) {
-            include_once($include_path);
-        } else {
-            die("There's no such class as " . $name);
-        }
+    if (file_exists($path)) {
+        require_once($path);
     } else {
-        die("There's no such class type as " . $name[0]);
+        die("Call to unresolved instance");
     }
 }

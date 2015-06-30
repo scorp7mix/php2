@@ -1,8 +1,8 @@
 <?php
 
-namespace blog\models;
+namespace models;
 
-trait M_Singleton
+trait Singleton
 {
     static private $instance;
 

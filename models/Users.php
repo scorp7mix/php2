@@ -1,10 +1,10 @@
 <?php
 
-namespace blog\models;
+namespace models;
 
-class M_User
+class Users
 {
-    use M_Singleton;
+    use Singleton;
 
 	protected static $db;
 	private $sid;
@@ -13,7 +13,7 @@ class M_User
 
 	protected function __construct()
 	{
-		static::$db = M_PDO::getInstance();
+		static::$db = PDOModel::getInstance();
 		$this->sid = null;
 		$this->uid = null;
 	}

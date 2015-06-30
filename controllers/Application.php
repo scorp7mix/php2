@@ -1,8 +1,8 @@
 <?php
 
-namespace blog\controllers;
+namespace controllers;
 
-class C_Application extends C_Controller
+class Application extends Controller
 {
     protected $content;
     protected $layout;
@@ -12,7 +12,7 @@ class C_Application extends C_Controller
         $this->content = '';
         $this->layout = './views/layout.php';
 
-        $users = new C_User();
+        $users = new User();
         $this->params['users'] = $users;
         $this->params['user'] = $users->getUser();
     }
@@ -38,16 +38,16 @@ class C_Application extends C_Controller
 
         switch ($c) {
             case 'article':
-                $controller = new C_Article();
+                $controller = new Article();
                 break;
             case 'comment':
-                $controller = new C_Comment(null);
+                $controller = new Comment(null);
                 break;
             case 'user':
-                $controller = new C_User();
+                $controller = new User();
                 break;
             default:
-                $controller = new C_Article();
+                $controller = new Article();
         }
 
         $action = isset($this->params[1]) ? $this->params[1] : 'index';

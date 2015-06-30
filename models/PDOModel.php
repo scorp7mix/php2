@@ -1,6 +1,6 @@
 <?php
 
-namespace blog\models;
+namespace models;
 
 use \PDO;
 
@@ -9,9 +9,9 @@ define("DB_USER", "root");
 define("DB_PASS", "");
 define("DB_NAME", "php2");
 
-class M_PDO
+class PDOModel
 {
-    use M_Singleton;
+    use Singleton;
 
     protected static $link;
 

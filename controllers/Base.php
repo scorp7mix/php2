@@ -1,8 +1,8 @@
 <?php
 
-namespace blog\controllers;
+namespace controllers;
 
-abstract class C_Base extends C_Controller
+abstract class Base extends Controller
 {
     protected $title;
     protected $action;

@@ -1,16 +1,16 @@
 <?php
 
-namespace blog\models;
+namespace models;
 
-class M_Article
+class Articles
 {
-    use M_Singleton;
+    use Singleton;
 
     private static $db;
 
     private function __construct()
     {
-        static::$db = M_PDO::getInstance();
+        static::$db = PDOModel::getInstance();
     }
 
     public static function index()

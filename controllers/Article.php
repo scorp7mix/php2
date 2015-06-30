@@ -1,10 +1,10 @@
 <?php
 
-namespace blog\controllers;
+namespace controllers;
 
-use blog\models\M_Article;
+use models\Articles;
 
-class C_Article extends C_Base
+class Article extends Base
 {
     private $comments;
     private $users;
@@ -12,7 +12,7 @@ class C_Article extends C_Base
 
     public function __construct()
     {
-        $this->model = M_Article::getInstance();
+        $this->model = Articles::getInstance();
     }
 
     public function before()
@@ -78,7 +78,7 @@ class C_Article extends C_Base
 
         $article = $this->getArticle('Location: /');
 
-        $this->comments = new C_Comment($article['id_article']);
+        $this->comments = new Comment($article['id_article']);
 
         $comments = $this->comments->request('index', $this->params);
         $new_comment = $this->comments->request('create', $this->params);
