@@ -8,37 +8,4 @@ abstract class C_Base extends C_Controller
     protected $action;
     protected $model;
     protected $view;
-
-    //
-    // Конструктор
-    //
-    public function __construct() {}
-
-    //
-    // Предварительная обработка перед обработчиком действия
-    //
-    protected function Before() {}
-
-    //
-    // Компоновка страницы и ее вывод
-    //
-    protected function Render() {}
-
-    //
-    // Получает конкретный элемент из модели по заданным параметрам
-    //
-    protected function getElement ($params, $headerOnError)
-    {
-        $id = isset($params[2]) ? intval($params[2]) : false;
-
-        if (!$id)
-            header($headerOnError);
-
-        $element = $this->model->Show($id);
-
-        if (!$element)
-            header($headerOnError);
-
-        return $element;
-    }
 }

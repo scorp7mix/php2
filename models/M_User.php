@@ -2,179 +2,138 @@
 
 namespace blog\models;
 
-//
-// Менеджер пользователей
-//
 class M_User
 {
-    private static $instance;
-	private static $db;				// драйвер БД
-	private $sid;				// идентификатор текущей сессии
-	private $uid;				// идентификатор текущего пользователя
+    use M_Singleton;
+
+	protected static $db;
+	private $sid;
+	private $uid;
 	
 
-	//
-	// Конструктор
-	//
 	protected function __construct()
 	{
-		self::$db = M_MySQLi::GetInstance();
+		static::$db = M_PDO::getInstance();
 		$this->sid = null;
 		$this->uid = null;
 	}
 
-    //
-    // для Singleton
-    //
-    public static function GetInstance()
-    {
-        if(null === self::$instance)
-            self::$instance = new self();
-
-        return self::$instance;
-    }
-
-	//
-	// Очистка неиспользуемых сессий
-	// 
-	public function ClearSessions()
+	public function clearSessions()
 	{
-		$min = date('Y-m-d H:i:s', time() - 60 * 20); 			
-		$t = "time_last < '%s'";
-		$where = sprintf($t, $min);
-		self::$db->Delete('sessions', $where);
+		$minimal_date = date('Y-m-d H:i:s', time() - 60 * 20);
+		$conditions = "time_last < '%s'";
+		$query = sprintf($conditions, $minimal_date);
+        static::$db->delete('sessions', $query);
 	}
 
-	//
-	// Авторизация
-	// $login 		- логин
-	// $password 	- пароль
-	// $remember 	- нужно ли запомнить в куках
-	// результат	- true или false
-	//
-
-	public function Login($login, $password, $remember = true)
+	public function login($login, $password, $remember = true)
 	{
-        if(empty($login))
-            return ['login' => 'has-error', 'password' => 'has-error', 'text' => 'Неправильное имя пользователя или пароль!!'];
+        $error_object = [
+            'login'     => 'has-error',
+            'password'  => 'has-error',
+            'text'      => 'Неправильное имя пользователя или пароль!!'
+        ];
 
-		// вытаскиваем пользователя из БД
-		$user = $this->GetByLogin($login);
+        if (empty($login)) {
+            return $error_object;
+        }
 
-		if ($user == null)
-            return ['login' => 'has-error', 'password' => 'has-error', 'text' => 'Неправильное имя пользователя или пароль!!'];
-		
+		$user = $this->getByLogin($login);
+
+		if (null === $user) {
+            return $error_object;
+        }
+
 		$id_user = $user['id_user'];
 		
-		// проверяем пароль
-		if ($user['password'] != md5($password))
-            return ['login' => 'has-error', 'password' => 'has-error', 'text' => 'Неправильное имя пользователя или пароль!!'];
-				
-		// запоминаем имя и md5(пароль)
-		if ($remember)
-		{
+		if ($user['password'] != md5('secret' . $password)) {
+            return $error_object;
+        }
+
+		if ($remember) {
 			$expire = time() + 3600 * 24 * 100;
 			setcookie('login', $login, $expire);
-			setcookie('password', md5($password), $expire);
+			setcookie('password', md5('secret' . $password), $expire);
 		}		
-				
-		// открываем сессию и запоминаем SID
-		$this->sid = $this->OpenSession($id_user);
+
+		$this->sid = $this->openSession($id_user);
 		
 		return true;
 	}
 
-    //
-    // Регистрация
-    // $login 		- логин
-    // $password 	- пароль
-    // результат	- true или текст ошибки
-    //
-
-    public function Register($login, $password, $password2)
+    public function register($login, $password, $password2)
     {
-        if(empty($login))
+        if (empty($login)) {
             return ['login' => 'has-error', 'text' => 'Введите имя пользователя!!'];
+        }
 
-        $user = $this->GetByLogin($login);
+        $user = $this->getByLogin($login);
 
-        if (null != $user)
+        if (null != $user) {
             return ['login' => 'has-error', 'text' => 'Такой пользователь уже зарегистрирован!!'];
+        }
 
-        // проверка пароля
-        if($password != $password2)
+        if ($password != $password2) {
             return ['password' => 'has-error', 'text' => 'Пароли не совпадают!!'];
+        }
 
-        if(empty($password))
+        if (empty($password)) {
             return ['password' => 'has-error', 'text' => 'Пароль не может быть пустым!!'];
+        }
 
-        // создаем пользователя
-        self::$db->Insert('users', ['login' => $login, 'password' => md5($password), 'id_role' => 2]);
+        static::$db->insert('users', ['login' => $login, 'password' => md5('secret' . $password), 'id_role' => 2]);
 
         return true;
     }
 
-	//
-	// Выход
-	//
-	public function Logout()
+	public function logout()
 	{
-        if(!$this->Get())
+        if(!$this->Get()) {
             return false;
-        self::$db->Delete('sessions', "sid='" . $this->sid . "'");
+        }
+
+        static::$db->delete('sessions', "sid='" . $this->sid . "'");
+
         setcookie('login', '', time() - 1);
 		setcookie('password', '', time() - 1);
+
 		unset($_COOKIE['login']);
 		unset($_COOKIE['password']);
 		unset($_SESSION['sid']);
+
 		$this->sid = null;
 		$this->uid = null;
+
+        return true;
 	}
 						
-	//
-	// Получение пользователя
-	// $id_user		- если не указан, брать текущего
-	// результат	- объект пользователя
-	//
-	public function Get($id_user = null)
-	{	
-		// Если id_user не указан, берем его по текущей сессии.
-		if ($id_user == null)
-			$id_user = $this->GetUid();
+	public function get($id_user = null)
+	{
+		if (null === $id_user) {
+            $id_user = $this->getUid();
+        }
 
-		if ($id_user == null)
-			return null;
-			
-		// А теперь просто возвращаем пользователя по id_user.
-		$t = "SELECT * FROM users WHERE id_user = '%d'";
-		$query = sprintf($t, $id_user);
-		$result = self::$db->Select($query);
-		return $result[0];		
+		if (null === $id_user) {
+            return null;
+        }
+
+		return static::$db->select('users', "id_user=" . $id_user)[0];
 	}
 	
-	//
-	// Получает пользователя по логину
-	//
-	public function GetByLogin($login)
-	{	
-		$t = "SELECT * FROM users WHERE login = '%s'";
-		$query = sprintf($t, $login);
-		$result = self::$db->Select($query);
-		return $result[0];
+	public function getByLogin($login)
+	{
+        return static::$db->select('users', "login='" . $login . "'")[0];
 	}
 			
-	//
-	// Проверка наличия привилегии
-	// $priv 		- имя привилегии
-	// $id_user		- если не указан, значит, для текущего
-	// результат	- true или false
-	//
-	public function Can($priv, $id_user = null)
+	public function can($priv, $id_user = null)
 	{
-        if(null == $id_user)
+        if (null == $id_user) {
             $id_user = $this->Get()['id_user'];
-        if(null == $id_user)
+        }
+
+        if (null == $id_user) {
             return false;
+        }
 
         $t = "SELECT * FROM users AS u " .
              "LEFT JOIN privs2roles AS pr ON u.id_role = pr.id_role " .
@@ -182,144 +141,102 @@ class M_User
              "WHERE u.id_user = %d AND p.name = '%s'";
 
         $query = sprintf($t, $id_user, $priv);
-        $result = self::$db->Select($query);
-
-		return $result ? true : false;
+        return static::$db->customSelect($query);
 	}
 
-	//
-	// Проверка активности пользователя
-	// $id_user		- идентификатор
-	// результат	- true если online
-	//
-	public function IsOnline($id_user)
-	{		
-        $t = "SELECT * FROM sessions WHERE id_user = %d";
-        $query = sprintf($t, $id_user);
-        $result = self::$db->Select($query);
-
-        return $result ? true : false;
+	public function isOnline($id_user)
+	{
+        return static::$db->select('sessions', "id_user=" . $id_user)[0];
 	}
 	
-	//
-	// Получение id текущего пользователя
-	// результат	- UID
-	//
-	public function GetUid()
+	public function getUid()
 	{	
-		// Проверка кеша.
-		if ($this->uid != null)
-			return $this->uid;	
+		if (null !== $this->uid) {
+            return $this->uid;
+        }
 
-		// Берем по текущей сессии.
-		$sid = $this->GetSid();
+		$sid = $this->getSid();
 
-		if ($sid == null)
-			return null;
-			
-		$t = "SELECT id_user FROM sessions WHERE sid = '%s'";
-		$query = sprintf($t, $sid);
-		$result = self::$db->Select($query);
+		if (null === $sid) {
+            return null;
+        }
+
+		$result = static::$db->select('sessions', "sid='" . $sid . "'");
 				
-		// Если сессию не нашли - значит пользователь не авторизован.
-		if (count($result) == 0)
-			return null;
-			
-		// Если нашли - запоминм ее.
+		if (null === $result) {
+            return null;
+        }
+
 		$this->uid = $result[0]['id_user'];
+
 		return $this->uid;
 	}
 
-	//
-	// Функция возвращает идентификатор текущей сессии
-	// результат	- SID
-	//
-	private function GetSid()
+	private function getSid()
 	{
-		// Проверка кеша.
-		if ($this->sid != null)
-			return $this->sid;
+		if (null !== $this->sid) {
+            return $this->sid;
+        }
 	
-		// Ищем SID в сессии.
-		$sid = @$_SESSION['sid'];
+		$sid = $_SESSION['sid'];
 
-		// Если нашли, попробуем обновить time_last в базе.
-		// Заодно и проверим, есть ли сессия там.
-		if ($sid != null)
-		{
-			$session = array();
+		if (null !== $sid) {
+			$session = [];
 			$session['time_last'] = date('Y-m-d H:i:s'); 			
-			$t = "sid = '%s'";
-			$where = sprintf($t, $sid);
-			$affected_rows = self::$db->Update('sessions', $session, $where);
+			$condition = "sid = '%s'";
+			$query = sprintf($condition, $sid);
+			$affected_rows = static::$db->update('sessions', $session, $query);
 
-			if ($affected_rows == 0)
-			{
-				$t = "SELECT count(*) FROM sessions WHERE sid = '%s'";		
-				$query = sprintf($t, $sid);
-				$result = self::$db->Select($query);
+			if ($affected_rows == 0) {
+				$result = static::$db->select('sessions', "sid='" . $sid . "'");
 				
-				if ($result[0]['count(*)'] == 0)
-					$sid = null;			
+				if (null === $result) {
+                    $sid = null;
+                }
 			}			
 		}		
 		
-		// Нет сессии? Ищем логин и md5(пароль) в куках.
-		// Т.е. пробуем переподключиться.
-		if ($sid == null && isset($_COOKIE['login']))
-		{
-			$user = $this->GetByLogin($_COOKIE['login']);
+		if (null === $sid && isset($_COOKIE['login'])) {
+			$user = $this->getByLogin($_COOKIE['login']);
 			
-			if ($user != null && $user['password'] == $_COOKIE['password'])
-				$sid = $this->OpenSession($user['id_user']);
+			if (null !== $user && $user['password'] == $_COOKIE['password']) {
+                $sid = $this->openSession($user['id_user']);
+            }
 		}
 		
-		// Запоминаем в кеш.
-		if ($sid != null)
-			$this->sid = $sid;
+		if (null !== $sid) {
+            $this->sid = $sid;
+        }
 		
-		// Возвращаем, наконец, SID.
-		return $sid;		
+		return $sid;
 	}
 	
-	//
-	// Открытие новой сессии
-	// результат	- SID
-	//
-	private function OpenSession($id_user)
+	private function openSession($id_user)
 	{
-		// генерируем SID
 		$sid = $this->GenerateStr(10);
 				
-		// вставляем SID в БД
-		$now = date('Y-m-d H:i:s'); 
-		$session = array();
+		$now = date('Y-m-d H:i:s');
+		$session = [];
 		$session['id_user'] = $id_user;
 		$session['sid'] = $sid;
 		$session['time_start'] = $now;
 		$session['time_last'] = $now;
-        self::$db->Insert('sessions', $session);
+        static::$db->insert('sessions', $session);
 				
-		// регистрируем сессию в PHP сессии
-		$_SESSION['sid'] = $sid;				
+		$_SESSION['sid'] = $sid;
 				
-		// возвращаем SID
-		return $sid;	
+		return $sid;
 	}
 
-	//
-	// Генерация случайной последовательности
-	// $length 		- ее длина
-	// результат	- случайная строка
-	//
-	private function GenerateStr($length = 10) 
+	private function generateStr($length = 10)
 	{
 		$chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPRQSTUVWXYZ0123456789";
 		$code = "";
 		$clen = strlen($chars) - 1;  
 
-		while (strlen($code) < $length) 
-            $code .= $chars[mt_rand(0, $clen)];  
+		while (strlen($code) < $length) {
+            $code .= $chars[mt_rand(0, $clen)];
+        }
 
 		return $code;
 	}

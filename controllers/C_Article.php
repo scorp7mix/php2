@@ -8,145 +8,155 @@ class C_Article extends C_Base
 {
     private $comments;
     private $users;
-    //
-    // Конструктор
-    //
+    private $user;
+
     public function __construct()
     {
-        parent::__construct();
-
-        $this->model = M_Article::GetInstance();
-        $this->users = new C_User();
+        $this->model = M_Article::getInstance();
     }
 
-    //
-    // Предварительная обработка перед обработчиком действия
-    //
-    public function Before()
+    public function before()
     {
         $this->title = 'Article';
+        $this->users = $this->params['users'];
+        $this->user = $this->params['user'];
     }
 
-    //
-    // Компоновка страницы и ее вывод
-    //
-    public function Render()
+    public function render()
     {
-        $menu = $this->Template('./views/article/menu.php',
-            ['menu_items' => $this->model->get_menu($this->action)]);
+        $menu = $this->template(
+            './views/article/menu.php',
+            ['menu_items' => $this->model->get_menu($this->action)]
+        );
 
-
-        $page = $this->Template('./views/article/layout.php',
-            ['title' => $this->title,
-                'menu' => $menu,
-                'view' => $this->view]);
+        $page = $this->template(
+            './views/article/layout.php',
+            [
+                'title' => $this->title,
+                'menu'  => $menu,
+                'view'  => $this->view
+            ]
+        );
 
         return $page;
     }
 
-    //
-    // Перечень всех статей
-    //
-    public function Index($params)
+    public function index()
     {
         $this->title .= '::Index';
-        $this->action = 'Index';
+        $this->action = 'index';
 
-        $articles = $this->model->All();
+        $articles = $this->model->index();
 
-        $this->view = $this->Template('./views/article/index.php',
-            ['articles' => $articles]);
+        $this->view = $this->template(
+            './views/article/index.php',
+            ['articles' => $articles]
+        );
     }
 
-    //
-    // Перечень статей для редактирования
-    //
-    public function Editor($params)
+    public function editor()
     {
-        if(!$this->users->CheckPriv('Article::Edit', $params['user']['id_user'])) {
+        if(!$this->users->checkPriv('Article::Edit', $this->user['id_user'])) {
             $this->view = 'Отказано в доступе';
             return;
         }
 
         $this->title .= '::Editor';
-        $this->action = 'Editor';
+        $this->action = 'editor';
 
-        $articles = $this->model->All();
+        $articles = $this->model->index();
 
-        $this->view = $this->Template('./views/article/editor.php',
-            ['articles' => $articles]);
+        $this->view = $this->template(
+            './views/article/editor.php',
+            ['articles' => $articles]
+        );
     }
 
-    //
-    // Показ одной статьи
-    //
-    public function Show($params)
+    public function show()
     {
         $this->title .= '::Show';
 
-        $article = $this->getElement($params, 'Location: /');
+        $article = $this->getArticle('Location: /');
 
         $this->comments = new C_Comment($article['id_article']);
 
-        $comments = $this->comments->Request('Index', $params);
-        $new_comment = $this->comments->Request('Create', $params);
+        $comments = $this->comments->request('index', $this->params);
+        $new_comment = $this->comments->request('create', $this->params);
 
-        $this->view = $this->Template('./views/article/show.php',
-            ['article' => $article,
-            'comments' => $comments,
-            'new_comment_form' => $new_comment]);
+        $this->view = $this->template(
+            './views/article/show.php',
+            [
+                'article' => $article,
+                'comments' => $comments,
+                'new_comment_form' => $new_comment
+            ]
+        );
     }
 
-    //
-    // Создание новой статьи
-    //
-    public function Create($params)
+    public function create()
     {
-        if(!$this->users->CheckPriv('Article::Create', $params['user']['id_user'])) {
+        if(!$this->users->checkPriv('Article::Create', $this->user['id_user'])) {
             $this->view = 'Отказано в доступе';
             return;
         }
 
         $this->title .= '::Create';
 
-        if($this->IsPost())
-            $edit_result = $this->editElement(null, 'Create');
+        if($this->isPost())
+            $edit_result = $this->editElement('create', null);
 
-        $this->view = $this->Template('./views/article/form.php',
-            ['form_title' => 'Новая статья',
-                'error' => isset($edit_result) ? $edit_result['error'] : [],
-                'article' => isset($edit_result) ? $edit_result['object'] : [],
-                'button_value' => 'Добавить']);
+        $this->view = $this->template(
+            './views/article/form.php',
+            [
+                'form_title'    => 'Новая статья',
+                'error'         => isset($edit_result) ? $edit_result['error'] : [],
+                'article'       => isset($edit_result) ? $edit_result['object'] : [],
+                'button_value'  => 'Добавить'
+            ]
+        );
     }
 
-    //
-    // Редактирование статьи
-    //
-    public function Edit($params)
+    public function edit()
     {
-        if(!$this->users->CheckPriv('Article::Edit', $params['user']['id_user'])) {
+        if(!$this->users->checkPriv('Article::Edit', $this->user['id_user'])) {
             $this->view = 'Отказано в доступе';
             return;
         }
 
         $this->title .= "::Edit";
 
-        $article = $this->getElement($params, 'Location: /Article/Editor');
+        $article = $this->getArticle('Location: /Article/Editor');
 
-        if($this->IsPost())
-            $edit_result = $this->editElement($article['id_article'], 'Edit');
+        if($this->isPost())
+            $edit_result = $this->editElement('edit', $article['id_article']);
 
-        $this->view = $this->Template('./views/article/form.php',
-            ['form_title' => 'Редактирование статьи',
-                'error' => isset($edit_result) ? $edit_result['error'] : [],
-                'article' => isset($edit_result) ? $article = $edit_result['object'] : $article,
-                'button_value' => 'Изменить']);
+        $this->view = $this->template(
+            './views/article/form.php',
+            [
+                'form_title'    => 'Редактирование статьи',
+                'error'         => isset($edit_result) ? $edit_result['error'] : [],
+                'article'       => isset($edit_result) ? $article = $edit_result['object'] : $article,
+                'button_value'  => 'Изменить'
+            ]
+        );
     }
 
-    //
-    // Дополнительный метод, используется при создании/изменении элемента
-    //
-    protected function editElement($id, $action)
+    protected function getArticle($headerOnError)
+    {
+        $id = isset($this->params[2]) ? intval($this->params[2]) : false;
+
+        if (!$id)
+            header($headerOnError);
+
+        $article = $this->model->show($id);
+
+        if (!$article)
+            header($headerOnError);
+
+        return $article;
+    }
+
+    protected function editElement($action, $id)
     {
         $object = [];
         $error = [];
@@ -154,6 +164,7 @@ class C_Article extends C_Base
         $fields = ['title', 'content'];
 
         $fields_not_empty = true;
+
         foreach ($fields as $field) {
             if (!empty($_POST[$field])) {
                 $object[$field] = $_POST[$field];
@@ -165,10 +176,8 @@ class C_Article extends C_Base
             }
         }
 
-        if ($fields_not_empty
-            && $this->model->$action($id, $object))
-        {
-            header('Location: /Article/Editor');
+        if($fields_not_empty && $this->model->$action($object, $id)) {
+            header('Location: /article/editor');
             die();
         }
 

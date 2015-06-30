@@ -1,10 +1,9 @@
 <?php
 
-//
-// Автозагрузка классов
-//
-function __autoload($name)
+function __autoload($path)
 {
+    $name = array_pop(explode('\\', $path));
+
     switch ($name[0]) {
         case 'C':
             $dir = '/controllers/';

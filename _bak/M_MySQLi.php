@@ -2,48 +2,29 @@
 
 namespace blog\models;
 
+define("DB_HOST", "localhost");
+define("DB_USER", "root");
+define("DB_PASS", "");
+define("DB_NAME", "php2");
+
 class M_MySQLi
 {
-    protected static $instance;
+    use M_Singleton;
+
     protected static $link;
 
-    //
-    // Конструктор
-    //
     private function __construct()
     {
-        // Настройки подключения к БД.
-        include_once("./models/mysqli_config.php");
-
-        // Подключение к БД.
-        self::$link = mysqli_connect(DB_HOST, DB_USER, DB_PASS, DB_NAME)
-            or die('Error ' . mysqli_error(self::$link));
+        static::$link = mysqli_connect(DB_HOST, DB_USER, DB_PASS, DB_NAME)
+            or die('Error ' . mysqli_error(static::$link));
     }
 
-    //
-    // для Singleton
-    //
-    public static function GetInstance()
+    public function Select($query)
     {
-        if (null === self::$instance)
-            self::$instance = new self();
-
-        return self::$instance;
-    }
-
-    private function __clone()
-    {
-    }
-
-    //
-    // SELECT
-    //
-    public function Select($sql)
-    {
-        $result = mysqli_query(self::$link, $sql);
+        $result = mysqli_query(static::$link, $query);
 
         if (!$result)
-            die(mysqli_error(self::$link));
+            die(mysqli_error(static::$link));
 
         $n = mysqli_num_rows($result);
 
@@ -57,19 +38,16 @@ class M_MySQLi
         return $rows;
     }
 
-    //
-    // INSERT
-    //
     public function Insert($table, $object)
     {
-        $table = mysqli_real_escape_string(self::$link, $table);
+        $table = mysqli_real_escape_string(static::$link, $table);
 
         $fields = [];
         $values = [];
 
         foreach ($object as $key => $value)
         {
-            $key = mysqli_real_escape_string(self::$link, $key);
+            $key = mysqli_real_escape_string(static::$link, $key);
             $fields[] = $key;
 
             if ($value == NULL)
@@ -78,7 +56,7 @@ class M_MySQLi
             }
             else
             {
-                $value = mysqli_real_escape_string(self::$link, $value);
+                $value = mysqli_real_escape_string(static::$link, $value);
                 $values[] = "'" . $value . "'";
             }
         }
@@ -88,24 +66,21 @@ class M_MySQLi
 
         $query = sprintf("INSERT INTO %s (%s) VALUES(%s)", $table, $fields_string, $values_string);
 
-        $result = mysqli_query(self::$link, $query);
+        $result = mysqli_query(static::$link, $query);
 
         if (!$result)
-            die(mysqli_error(self::$link));
+            die(mysqli_error(static::$link));
 
-        return mysqli_insert_id(self::$link);
+        return mysqli_insert_id(static::$link);
     }
 
-    //
-    // UPDATE
-    //
     public function Update($table, $object, $conditions)
     {
         $settings = [];
 
         foreach ($object as $key => $value)
         {
-            $key = mysqli_real_escape_string(self::$link, $key);
+            $key = mysqli_real_escape_string(static::$link, $key);
 
             if ($value == NULL)
             {
@@ -113,7 +88,7 @@ class M_MySQLi
             }
             else
             {
-                $value = mysqli_real_escape_string(self::$link, $value);
+                $value = mysqli_real_escape_string(static::$link, $value);
                 $settings[] = $key . "='" . $value . "'";
             }
         }
@@ -121,26 +96,23 @@ class M_MySQLi
         $settings_string = implode(',', $settings);
 
         $query = sprintf("UPDATE %s SET %s WHERE %s", $table, $settings_string, $conditions);
-        $result = mysqli_query(self::$link, $query);
+        $result = mysqli_query(static::$link, $query);
 
         if (!$result)
-            die(mysqli_error(self::$link));
+            die(mysqli_error(static::$link));
 
-        return mysqli_affected_rows(self::$link);
+        return mysqli_affected_rows(static::$link);
     }
 
-    //
-    // DELETE
-    //
     public function Delete($table, $conditions)
     {
         $query = sprintf("DELETE FROM %s WHERE %s", $table, $conditions);
 
-        $result = mysqli_query(self::$link, $query);
+        $result = mysqli_query(static::$link, $query);
 
         if (!$result)
-            die(mysqli_error(self::$link));
+            die(mysqli_error(static::$link));
 
-        return mysqli_affected_rows(self::$link);
+        return mysqli_affected_rows(static::$link);
     }
 }

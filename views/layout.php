@@ -10,12 +10,12 @@
     <header>
         <div class="container text-right">
             <br>
-            <? if(null == $user_login): ?>
-                <a href="/User/Login" class="btn btn-info btn-sm">Вход</a>
-                <a href="/User/Register" class="btn btn-info btn-sm">Регистрация</a>
+            <? if(null == $user): ?>
+                <a href="/user/login" class="btn btn-info btn-sm">Вход</a>
+                <a href="/user/register" class="btn btn-info btn-sm">Регистрация</a>
             <? else: ?>
-                <span>Текущий пользователь: [ <?= $user_login ?> ]</span>
-                <a href="/User/Logout" class="btn btn-info btn-sm">Выход</a>
+                <span>Текущий пользователь: [ <?= $user ?> ]</span>
+                <a href="/user/logout" class="btn btn-info btn-sm">Выход</a>
             <? endif ?>
         </div>
     </header>

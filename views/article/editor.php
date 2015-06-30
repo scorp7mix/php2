@@ -2,7 +2,7 @@
 
 <br>
 
-<a href="/Article/Create" class="btn btn-info btn-sm">Добавить новую статью</a>
+<a href="/article/create" class="btn btn-info btn-sm">Добавить новую статью</a>
 
 <br><br>
 
@@ -11,7 +11,7 @@
         <p>Статей в базе не найдено..</p>
     <? else: ?>
         <? foreach ($articles as $article): ?>
-            <a href="/Article/Edit/<?= $article['id_article'] ?>"
+            <a href="/article/edit/<?= $article['id_article'] ?>"
                class="list-group-item">
                 <?= $article['title'] ?>
             </a>

@@ -4,43 +4,33 @@ namespace blog\controllers;
 
 abstract class C_Controller
 {
-    protected abstract function Render ();
-    protected abstract function Before ();
+    protected $params;
 
-    //
-    // Обработка запроса
-    //
-    public function Request ($action, $params)
+    protected abstract function render ();
+
+    protected abstract function before ();
+
+    public function request ($action, $params)
     {
         $this->params = $params;
-        $this->Before();
-        $this->$action($params);
-        return $this->Render();
+        $this->before();
+        $this->$action();
+        return $this->render();
     }
 
-    //
-    // Есть ли что-нибудь в _GET
-    //
-    protected function IsGet()
+    protected function isGet()
     {
         return $_SERVER['REQUEST_METHOD'] == "GET";
     }
 
-    //
-    // Есть ли что-нибудь в _POST
-    //
-    protected function IsPost()
+    protected function isPost()
     {
         return $_SERVER['REQUEST_METHOD'] == "POST";
     }
 
-    //
-    // Шаблонизатор
-    //
-    protected function Template($fileName, $params = [])
+    protected function template($fileName, $params = [])
     {
-        foreach($params as $key => $value)
-        {
+        foreach ($params as $key => $value) {
             $$key = $value;
         }
 
@@ -49,9 +39,6 @@ abstract class C_Controller
         return ob_get_clean();
     }
 
-    //
-    // Обработка несуществующего метода
-    //
     public function __call($name, $params)
     {
         die("There's no such method as " . $name);

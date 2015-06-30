@@ -6,70 +6,52 @@ class C_Application extends C_Controller
 {
     protected $content;
     protected $layout;
-    protected $user;
 
-    public function __construct() {}
-
-    //
-    // Предварительная обработка перед обработчиком действия
-    //
-    protected function Before()
+    protected function before()
     {
         $this->content = '';
         $this->layout = './views/layout.php';
 
         $users = new C_User();
-        $this->user = $users->GetUser();
+        $this->params['users'] = $users;
+        $this->params['user'] = $users->getUser();
     }
 
-    //
-    // Компоновка страницы и ее вывод
-    //
-    protected function Render()
+    protected function render()
     {
-        $page = $this->Template($this->layout, ['user_login' => $this->user['login'], 'content' => $this->content]);
+        $page = $this->template(
+            $this->layout,
+            [
+                'user' => $this->params['user']['login'],
+                'content' => $this->content
+            ]
+        );
 
         header('Content-type: text/html; charset=utf-8');
 
         echo $page;
     }
 
-    public function Execute($params)
+    public function execute()
     {
-        // Установка контроллера
-        $c = '';
+        $c = isset($this->params[0]) ? $this->params[0] : '';
 
-        if(isset($params[0]))
-        {
-            $c = $params[0];
-            unset($params[0]);
-        }
-
-        switch ($c)
-        {
-            case 'Article':
+        switch ($c) {
+            case 'article':
                 $controller = new C_Article();
                 break;
-            case 'Comment':
+            case 'comment':
                 $controller = new C_Comment(null);
                 break;
-            case 'User':
+            case 'user':
                 $controller = new C_User();
                 break;
             default:
                 $controller = new C_Article();
         }
 
-        // Установка обработчика действия
-        $action = 'Index';
-        if(isset($params[1]))
-        {
-            $action = $params[1];
-            unset($params[1]);
-        }
+        $action = isset($this->params[1]) ? $this->params[1] : 'index';
 
-        $params['user'] = $this->user;
-
-        $this->content = $controller->Request($action, $params);
+        $this->content = $controller->request($action, $this->params);
     }
 }

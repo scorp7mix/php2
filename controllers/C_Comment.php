@@ -8,119 +8,127 @@ class C_Comment extends C_Base
 {
     private $id_article;
     private $users;
-    //
-    // Конструктор
-    //
+    private $user;
+
     public function __construct($id_article)
     {
-        parent::__construct();
-
         $this->id_article = $id_article;
-        $this->model = M_Comment::GetInstance();
-        $this->users = new C_User();
+        $this->model = M_Comment::getInstance();
     }
 
-    //
-    // Предварительная обработка перед обработчиком действия
-    //
-    public function Before()
+    public function before()
     {
         $this->title = 'Comment';
+        $this->users = $this->params['users'];
+        $this->user = $this->params['user'];
     }
 
-    //
-    // Компоновка страницы и ее вывод
-    //
-    public function Render()
+    public function render()
     {
-        $page = $this->Template('./views/comment/layout.php',
-            ['title' => $this->title,
-            'view' => $this->view]);
+        $page = $this->template(
+            './views/comment/layout.php',
+            [
+                'title' => $this->title,
+                'view' => $this->view
+            ]
+        );
 
         return $page;
     }
 
-    //
-    // Перечень всех комментариев
-    //
-    public function Index($params)
+    public function index()
     {
         $this->title .= '::Index';
-        $this->action = 'Index';
+        $this->action = 'index';
 
-        $comments = $this->model->All($this->id_article);
+        $comments = $this->model->index($this->id_article);
 
-        $this->view = $this->Template('./views/comment/index.php',
-            ['comments' => $comments]);
+        $this->view = $this->template(
+            './views/comment/index.php',
+            ['comments' => $comments]
+        );
     }
 
-    //
-    // Показ одного комментария
-    //
-    public function Show($params)
+    public function show()
     {
         $this->title .= '::Show';
 
-        $comment = $this->getElement($params, 'Location: /Article/Show/' . $this->id_article);
+        $comment = $this->getComment('Location: /Article/Show/' . $this->id_article);
 
-        $this->view = $this->Template('./views/comment/show.php',
-            ['comment' => $comment]);
+        $this->view = $this->template(
+            './views/comment/show.php',
+            ['comment' => $comment]
+        );
     }
 
-    //
-    // Создание нового комментария
-    //
-    public function Create($params)
+    public function create()
     {
-        if(!$this->users->CheckPriv('Comment::Create', $params['user']['id_user'])) {
+        if(!$this->users->checkPriv('Comment::Create', $this->user['id_user'])) {
             $this->view = 'Отказано в доступе';
             return;
         }
 
         $this->title .= '::Create';
 
-        if($this->IsPost())
-            $edit_result = $this->editElement($this->id_article, 'Create', $params['user']['id_user'], null);
+        if($this->isPost())
+            $edit_result = $this->editElement($this->id_article, 'create', $this->user['id_user'], null);
 
-        $this->view = $this->Template('./views/comment/form.php',
-            ['form_title' => 'Новый комментарий',
-                'error' => isset($edit_result) ? $edit_result['error'] : [],
-                'comment' => isset($edit_result) ? $edit_result['object'] : [],
-                'button_value' => 'Добавить']);
+        $this->view = $this->template(
+            './views/comment/form.php',
+            [
+                'form_title'    => 'Новый комментарий',
+                'error'         => isset($edit_result) ? $edit_result['error'] : [],
+                'comment'       => isset($edit_result) ? $edit_result['object'] : [],
+                'button_value'  => 'Добавить'
+            ]
+        );
     }
 
-    //
-    // Редактирование комментария
-    //
-    public function Edit($params)
+    public function edit()
     {
-        if(!$this->users->CheckPriv('Comment::Edit', $params['user']['id_user'])) {
+        if(!$this->users->checkPriv('Comment::Edit', $this->user['id_user'])) {
             $this->view = 'Отказано в доступе';
             return;
         }
 
         $this->title .= "::Edit";
 
-        $comment = $this->getElement($params, 'Location: /Article/Show/' . $this->id_article);
+        $comment = $this->getComment('Location: /Article/Show/' . $this->id_article);
 
-        if($comment['id_user'] != $params['user']['id_user']) {
+        if($comment['id_user'] != $this->user['id_user']) {
             $this->view = 'Вы не можете редактировать чужой комментарий!!';
             return;
         }
 
-        if($this->IsPost())
-            $edit_result = $this->editElement($comment['id_comment'], 'Edit', $params['user']['id_user'], $comment['id_article']);
+        if($this->isPost())
+            $edit_result = $this->editElement($comment['id_comment'], 'edit', $this->user['id_user'], $comment['id_article']);
 
-        $this->view = $this->Template('./views/comment/form.php',
-            ['form_title' => 'Редактирование комментария',
+        $this->view = $this->Template(
+            './views/comment/form.php',
+            [
+                'form_title' => 'Редактирование комментария',
                 'error' => isset($edit_result) ? $edit_result['error'] : [],
                 'comment' => isset($edit_result) ? $edit_result['object'] : $comment,
-                'button_value' => 'Изменить']);
+                'button_value' => 'Изменить'
+            ]
+        );
     }
 
-    //
-    // Дополнительный метод, используется при создании/изменении элемента
-    //
+    protected function getComment ($headerOnError)
+    {
+        $id = isset($this->params[2]) ? intval($this->params[2]) : false;
+
+        if (!$id)
+            header($headerOnError);
+
+        $comment = $this->model->show($id);
+
+        if (!$comment)
+            header($headerOnError);
+
+        return $comment;
+    }
+
     protected function editElement($id, $action, $id_user, $id_article)
     {
         $object = [];
@@ -131,9 +139,7 @@ class C_Comment extends C_Base
         $object['id_user'] = $id_user;
         $error['text'] = !empty($text) ? '' : 'has-error';
 
-        if(!empty($text)
-            && $this->model->$action($id, $object))
-        {
+        if (!empty($text) && $this->model->$action($id, $object)) {
             header('Location: /Article/Show/' . ($id_article ?  $id_article : $id));
             die();
         }

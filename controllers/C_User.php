@@ -7,115 +7,100 @@ use blog\models\M_User;
 class C_User extends C_Base
 {
     protected $model;
-    //
-    // Конструктор
-    //
+
     public function __construct()
     {
-        parent::__construct();
-
-        $this->model = M_User::GetInstance();
+        $this->model = M_User::getInstance();
     }
 
-    //
-    // Предварительная обработка перед обработчиком действия
-    //
-    public function Before()
+    public function before()
     {
         $this->title = 'User';
     }
 
-    //
-    // Компоновка страницы и ее вывод
-    //
-    public function Render()
+    public function render()
     {
-        $page = $this->Template('./views/user/layout.php',
+        $page = $this->template(
+            './views/user/layout.php',
             ['title' => $this->title,
-             'view' => $this->view]);
+             'view' => $this->view]
+        );
 
         return $page;
     }
 
-    //
-    // Регистрация
-    //
-    public function Register()
+    public function register()
     {
         $this->title .= '::Register';
 
-        if($this->IsPost())
-        {
-            $reg_result = $this->model->Register($_POST['login'], $_POST['password'], $_POST['password2']);
+        if ($this->isPost()) {
+            $reg_result = $this->model->register($_POST['login'], $_POST['password'], $_POST['password2']);
 
             if(true === $reg_result)
-            {
                 header('Location: /');
-            }
 
-            $user = ['login' => $_POST['login'],
-                'password' => $_POST['password'],
-                'password2' => $_POST['password2']];
+            $user = [
+                'login'     => $_POST['login'],
+                'password'  => $_POST['password'],
+                'password2' => $_POST['password2']
+            ];
+
             $error = $reg_result;
         }
 
-        $this->view = $this->Template('./views/user/form.php',
-            ['form_title' => 'Регистрация',
-                'error' => isset($error) ? $error : [],
-                'user' => isset($user) ? $user : [],
-                'button_value' => 'Зарегистрировать']);
+        $this->view = $this->template(
+            './views/user/form.php',
+            [
+                'form_title'    => 'Регистрация',
+                'error'         => isset($error) ? $error : [],
+                'user'          => isset($user) ? $user : [],
+                'button_value'  => 'Зарегистрировать'
+            ]
+        );
     }
 
-    //
-    // Авторизация
-    //
-    public function Login()
+    public function login()
     {
         $this->title .= '::Login';
 
-        if($this->IsPost())
-        {
-            $log_result = $this->model->Login($_POST['login'], $_POST['password'], $_POST['remember']);
+        if ($this->isPost()) {
+            $log_result = $this->model->login($_POST['login'], $_POST['password'], $_POST['remember']);
 
             if(true === $log_result)
-            {
                 header('Location: /');
-            }
 
-            $user = ['login' => $_POST['login'],
-                'password' => $_POST['password']];
+            $user = [
+                'login' => $_POST['login'],
+                'password' => $_POST['password']
+            ];
+
             $error = $log_result;
         }
 
-        $this->view = $this->Template('./views/user/form.php',
-            ['form_title' => 'Авторизация',
-                'error' => isset($error) ? $error : [],
-                'user' => isset($user) ? $user : [],
-                'button_value' => 'Войти']);
+        $this->view = $this->template(
+            './views/user/form.php',
+            [
+                'form_title'    => 'Авторизация',
+                'error'         => isset($error) ? $error : [],
+                'user'          => isset($user) ? $user : [],
+                'button_value'  => 'Войти'
+            ]
+        );
     }
 
-    //
-    // Получение пользователя
-    //
-    public function GetUser($id_user = null)
+    public function getUser($id_user = null)
     {
-        return $this->model->Get($id_user);
+        return $this->model->get($id_user);
     }
 
-    //
-    // Выход
-    //
-    public function Logout()
+    public function logout()
     {
-        $this->model->Logout();
+        $this->model->logout();
         header('Location: /');
     }
 
-    //
-    // Получение пользователя
-    //
-    public function CheckPriv($priv, $id_user)
+    public function checkPriv($priv, $id_user)
     {
-        return $this->model->Can($priv, $id_user);
+        return $this->model->can($priv, $id_user);
     }
 }
